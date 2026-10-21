@@ -79,3 +79,7 @@ Repositorio oficial y entorno de laboratorio interactivo para el curso de **Desa
 ---
 **Docente Titular:** MCC. Iván Márquez Larios (`ijmarquezl`)  
 **Tecnológico Nacional de México — Campus Cancún**
+
+
+**Nombre:** Armando Chim Domínguez
+**Matrícula:** 23531079 **Track:** Desarrollo Web
