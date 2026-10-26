@@ -101,4 +101,4 @@ def eco(datos: Mensaje):
 > Al revisar mi código, comprobé que era importante manejar las peticiones incorrectas. Verifiqué que mi servidor respondiera con el código HTTP 422 cuando recibía un JSON mal formado y con el código HTTP 405 cuando se utilizaba un método no permitido. Para cumplir con estos requisitos, utilicé Pydantic para validar los datos y definí la ruta /api/eco únicamente para aceptar peticiones POST. Así comprobé que mi API respondiera correctamente ante estos casos.
 
 ---
-**Firma digital:** [Usuario de GitHub]
+**Firma digital:** https://github.com/ArmandoChimDominguez
