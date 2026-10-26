@@ -91,13 +91,14 @@ def eco(datos: Mensaje):
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de códigos de estado HTTP 200, 400 y 422
 
-* [ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
-* [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
-* [ ] Encabezados `Content-Type: application/json` correctamente configurados.
+* [ *] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
+* [ *] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
+* [* ] Encabezados `Content-Type: application/json` correctamente configurados.
+   
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> 
+> Al revisar mi código, comprobé que era importante manejar las peticiones incorrectas. Verifiqué que mi servidor respondiera con el código HTTP 422 cuando recibía un JSON mal formado y con el código HTTP 405 cuando se utilizaba un método no permitido. Para cumplir con estos requisitos, utilicé Pydantic para validar los datos y definí la ruta /api/eco únicamente para aceptar peticiones POST. Así comprobé que mi API respondiera correctamente ante estos casos.
 
 ---
 **Firma digital:** [Usuario de GitHub]
