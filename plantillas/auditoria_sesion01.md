@@ -30,7 +30,28 @@ Por eso, utilicé FastAPI y Pydantic para facilitar la recepción y validación 
 
 ### 2.2 Prompt Estructurado
 ```text
-[Pega aquí el prompt formal que redactaste para la IA]
+Actúa como un asistente de programación especializado en Python y FastAPI.
+
+Contexto:
+Estoy realizando una práctica de Desarrollo de Aplicaciones Web en Google Colab.
+
+Requisitos:
+1. Crear la ruta GET /api/estado, que devuelva:
+   {"servidor": "ok", "curso": "DAB-2201"}
+   con código HTTP 200.
+
+2. Crear la ruta POST /api/eco, que reciba un JSON con la
+   propiedad "mensaje" y devuelva el mensaje recibido junto
+   con "recibido": true.
+
+3. Si el JSON está mal formado, debe responder con HTTP 422
+   sin provocar un error HTTP 500.
+
+4. Si se utiliza GET en /api/eco, debe responder con HTTP 405.
+
+Utiliza Pydantic para validar los datos recibidos.
+Entrega el código completo de app.py y explica brevemente
+cómo funciona.
 ```
 
 ---
