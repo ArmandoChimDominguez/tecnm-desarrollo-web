@@ -11,7 +11,10 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* Procesamiento manual de JSON de petición sin IA  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> 
+> La dificuultad principal que encontre al elaborar la practrica fue como entendr como poder recibir 
+los datos de las peticiones y comprobar que el JSON tuviera la información correcta.
+También ocupaba que el servidor respondiera de manera correcta cuando los datos estuvieran mal escritos.
+Por eso, utilicé FastAPI y Pydantic para facilitar la recepción y validación de los mensajes.
 
 ---
 
