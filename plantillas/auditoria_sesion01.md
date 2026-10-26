@@ -2,8 +2,8 @@
 **Materia:** Desarrollo de Aplicaciones Web (DAB-2201)  
 **Tema:** Encuadre, Diagnóstico HTTP y Servidor en Colab  
 **Docente Titular:** MCC. Iván Márquez Larios (`ijmarquezl`)  
-**Estudiante:** [Nombre Completo]  
-**Matrícula:** [No. de Control]  
+**Estudiante:** [Armando Chim Dominguez]  
+**Matrícula:** [23531079]  
 **Track:** [ Python/FastAPI | PHP 8+ ]  
 
 ---
