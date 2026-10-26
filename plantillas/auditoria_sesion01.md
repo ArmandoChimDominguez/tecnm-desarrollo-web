@@ -58,7 +58,32 @@ cómo funciona.
 
 ## 3. Código Devuelto por el Modelo
 ```python
-# Código devuelto por el LLM
+%%writefile app.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI(title="Tu servidor responderá exactamente así")
+
+# recibir el msg en JSON
+class Mensaje(BaseModel):
+    mensaje: str
+
+# comprueba el estdo del servisdor
+@app.get("/api/estado")
+def estado():
+    return {
+        "servidor": "ok",
+        "curso": "DAB-2201"
+    }
+
+
+    # recibir y devolver el mensaje
+@app.post("/api/eco")
+def eco(datos: Mensaje):
+    return {
+        "mensaje": datos.mensaje,
+        "recibido": True
+    }
 ```
 
 ---
