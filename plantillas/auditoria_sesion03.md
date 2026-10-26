@@ -29,7 +29,7 @@
 ```text
 "Actúa como un Arquitecto de software senior especialista en APIs RESTful. Necesito implementar un endpoint en FastAPI llamado POST /api/recurso. El endpoint recibe un JSON con la clave dato (string). Requisitos estrictos: 1. Si el header Content-Type de la petición NO es application/json, el servidor debe devolver un error 415 Unsupported Media Type. 2. Si el header es correcto pero el campo dato viene vacío, devolver 400 Bad Request. 3. Si todo es correcto, devolver 200 OK. Es crucial que la validación del Content-Type ocurra ANTES de que FastAPI intente validar el cuerpo con Pydantic, para evitar errores 422 prematuros. Entrégame solo el código modular y asegúrate de manejar los códigos HTTP semánticos."
 ```
-
+"Actúa como un Arquitecto de software senior especialista en APIs RESTful. Necesito implementar un endpoint en FastAPI llamado POST /api/recurso. El endpoint recibe un JSON con la clave dato (string). Requisitos estrictos: 1. Si el header Content-Type de la petición NO es application/json, el servidor debe devolver un error 415 Unsupported Media Type. 2. Si el header es correcto pero el campo dato viene vacío, devolver 400 Bad Request. 3. Si todo es correcto, devolver 200 OK. Es crucial que la validación del Content-Type ocurra ANTES de que FastAPI intente validar el cuerpo con Pydantic, para evitar errores 422 prematuros. Entrégame solo el código modular y asegúrate de manejar los códigos HTTP semánticos."
 ---
 
 ## 3. Código Devuelto por el Modelo
