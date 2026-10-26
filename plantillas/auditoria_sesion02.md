@@ -54,8 +54,6 @@ Entrega el código completo, organizado y listo para ejecutarse en Google Colab.
 
 ## 3. Código Devuelto por el Modelo
 ```python
-# Código devuelto por el LLM
-```
 
 %%writefile app_ia.py
 from fastapi import FastAPI, HTTPException, status
@@ -140,6 +138,9 @@ def eliminar_recurso():
         "status": "success",
         "mensaje": "Recurso eliminado"
     }
+
+```
+
 
 ---
 
