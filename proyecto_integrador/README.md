@@ -29,11 +29,13 @@ De esta manera, se busca mejorar la organización de los reportes y ayudar a ide
 
 ## 3. Stack
 
-- Backend: [FastAPI / PHP 8]
-- Base de datos: [SQLite / PostgreSQL]
+- Backend: [Python 3.10+ con FastAPI.]
+- Base de datos: [SQLite]
 - ORM / migraciones: [SQLAlchemy + Alembic / otro]
-- Frontend: HTML, CSS y JavaScript vanilla
-- Pruebas: [pytest + httpx / Postman + Newman]
+- Frontend: HTML5, CSS3 y JavaScript vanilla.
+- Pruebas: [pytest + httpx / Postman + Newman
+- Control de versiones: Git + GitHub.
+- Contenedores: Docker.
 
 ## 4. Cómo ejecutarlo
 
