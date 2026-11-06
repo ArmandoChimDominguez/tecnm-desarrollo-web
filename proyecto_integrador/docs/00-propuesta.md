@@ -1,18 +1,19 @@
 # Propuesta del Proyecto Integrador
 
 **Curso:** Desarrollo de Aplicaciones Web (DAB-2201)  
-**Equipo:** [Nombre 1] y [Nombre 2]  
+**Equipo:** Armando Chim Dominguez y Pedro Pablo Pool Che
 **Dominio elegido:** [Tablero → Tarea | Espacio → Reserva | Categoría → Gasto]  
 **Repositorio:** [enlace]  
-**Fecha:** [DD/MM/AAAA]
+**Fecha:** [01/11/2026]
 
 > Entrega: **sesión 4**, antes de la clase. Extensión máxima: 2 páginas.
 
 ---
 
 ## 1. Problema y usuario
+El proyecto consiste en desarrollar una aplicación web para organizar y dar seguimiento a problemas relacionados con los servicios públicos de una comunidad, como baches, luminarias dañadas y acumulación de basura.
 
-[¿Qué problema resuelve? ¿Quién lo usaría? ¿Por qué es útil? 3–5 líneas.]
+Está dirigido a ciudadanos que necesitan registrar este tipo de situaciones y a administradores encargados de organizar la atención de los reportes. Su objetivo es facilitar el registro, consulta y seguimiento de los problemas para mantener una mejor organización de las incidencias.
 
 ## 2. Entidades
 
