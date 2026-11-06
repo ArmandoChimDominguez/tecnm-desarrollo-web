@@ -1,4 +1,4 @@
-# Proyecto Integrador · [Nombre del proyecto]
+  # Proyecto Integrador · Sistema de reporte ciudadano
 
 **Curso:** Desarrollo de Aplicaciones Web (DAB-2201)  
 **Equipo:** Armando Chim Dominguez y Pedro Pablo Pool Che  
