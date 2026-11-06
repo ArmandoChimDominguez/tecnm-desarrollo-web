@@ -30,8 +30,12 @@ Está dirigido a ciudadanos que necesitan registrar este tipo de situaciones y a
 | Campo | Tipo | Obligatorio | Regla |
 | :--- | :--- | :---: | :--- |
 | id | entero | sí | generado por el servidor |
-| [padre]_id | entero | sí | llave foránea |
-| [campo] | [tipo] | [sí/no] | [regla] |
+| tablero_id | entero | sí | llave foránea |
+| titulo | texto | sí | entre 5 y 100 caracteres |
+| descripcion | texto | sí | entre 10 y 500 caracteres |
+| categoria | texto | sí | baches, alumbrado o basura |
+| ubicacion | texto | sí | entre 5 y 150 caracteres |
+| estado | texto | sí | pendiente, en_progreso o resuelta |
 
 ### Usuario
 
@@ -42,7 +46,7 @@ Está dirigido a ciudadanos que necesitan registrar este tipo de situaciones y a
 | password_hash | texto | nunca se devuelve |
 | rol | texto | `user` o `admin` |
 
-**Relación:** [Entidad principal] 1 → N [Entidad secundaria].
+**Relación:** Tablero 1 → N Tarea. Un tablero puede contener varias tareas relacionadas con problemas de servicios públicos.
 
 ## 3. Endpoints
 
