@@ -1,8 +1,8 @@
 # Proyecto Integrador · [Nombre del proyecto]
 
 **Curso:** Desarrollo de Aplicaciones Web (DAB-2201)  
-**Equipo:** [Nombre 1] y [Nombre 2]  
-**Dominio elegido:** [Tablero → Tarea | Espacio → Reserva | Categoría → Gasto]  
+**Equipo:** Armando Chim Dominguez y Pedro Pablo Pool Che  
+**Dominio elegido:** Reporte → Seguimiento
 **Repositorio:** [enlace al repositorio]  
 **Docente:** MCC. Iván Márquez Larios (`ijmarquezl`)
 
@@ -12,15 +12,20 @@
 
 ## 1. ¿Qué resuelve?
 
-[Explica en 3–5 líneas qué problema resuelve el producto y para quién. Sin tecnicismos innecesarios.]
+El Sistema de Reporte Ciudadano es una aplicación web que permite a los ciudadanos registrar problemas que afectan a su comunidad, como baches, luminarias dañadas, acumulación de basura y otros problemas relacionados con los servicios públicos.
+
+Su objetivo es facilitar la comunicación entre los ciudadanos y las autoridades municipales, permitiendo registrar, consultar y dar seguimiento a los reportes realizados.
+
+De esta manera, se busca mejorar la organización de los reportes y ayudar a identificar los problemas que necesitan atención.
 
 ## 2. Alcance
 
-- Entidad principal: [nombre]
-- Entidad secundaria: [nombre]
+- Entidad principal: Reporte
+- Entidad secundaria: Seguimienti
 - Usuario: registro, login y rol `user`/`admin`
-- Interfaz: una SPA con login, lista, formulario y eliminar
-- Fuera de alcance: [lo que decidieron no hacer]
+- Interfaz: Una SPA con inicio de sesión, lista de reportes, formulario para crear reportes y opción para eliminarlos.
+- Funcionalidad principal: Los ciudadanos podrán crear y consultar sus reportes, mientras que el administrador podrá consultar todos los reportes.
+- Fuera de alcance: Aplicación móvil, notificaciones en tiempo real, pagos, carga de fotografías y conexión con servicios externos.
 
 ## 3. Stack
 
