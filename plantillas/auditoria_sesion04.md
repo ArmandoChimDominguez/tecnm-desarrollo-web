@@ -29,9 +29,9 @@
 
 ### 2.2 Prompt Estructurado
 ```text
-"Actúa como un Arquitecto backend experto en APIs RESTful. Necesito una API en FastAPI para gestionar libros usando URIs jerárquicas limpias (sin verbos como 'get' o 'crear'). Implementa GET /api/libros para listar todos y GET /api/libros/{libro_id} para obtener uno solo. Utiliza el objeto Path de FastAPI para asegurar que el ID sea un entero positivo. Si el libro no existe en el diccionario global, devuelve un HTTP 404 Not Found. Entrégame solo el código modular con las mejores prácticas."
-```
 
+```
+"Actúa como un Arquitecto backend experto en APIs RESTful. Necesito una API en FastAPI para gestionar libros usando URIs jerárquicas limpias (sin verbos como 'get' o 'crear'). Implementa GET /api/libros para listar todos y GET /api/libros/{libro_id} para obtener uno solo. Utiliza el objeto Path de FastAPI para asegurar que el ID sea un entero positivo. Si el libro no existe en el diccionario global, devuelve un HTTP 404 Not Found. Entrégame solo el código modular con las mejores prácticas."
 ---
 
 ## 3. Código Devuelto por el Modelo
