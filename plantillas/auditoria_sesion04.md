@@ -37,7 +37,6 @@
 ## 3. Código Devuelto por el Modelo
 ```python
 # Código devuelto por el LLM
-```
 from fastapi import FastAPI, HTTPException, Path, status
 from pydantic import BaseModel
 
@@ -76,6 +75,7 @@ def obtener_libro(libro_id: int = Path(..., ge=1, description="ID positivo")):
             detail=f"El libro con ID {libro_id} no existe"
         )
     return db_libros[libro_id]
+```
 ---
 
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
