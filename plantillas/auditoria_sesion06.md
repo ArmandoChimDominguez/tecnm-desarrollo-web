@@ -51,4 +51,15 @@
 > 
 
 ---
-**Firma digital:** [Usuario de GitHub]
+Responde con tus palabras:
+¿Qué resultado te costó más alcanzar y por qué?
+> El resultado que más me costó fue entender la diferencia entre validar con Field (para el cuerpo de la petición) y validar con Query (para los parámetros de la URL). Al principio intenté poner las restricciones del límite en el modelo de Pydantic, pero el verificador fallaba porque el Query Param se maneja por separado en FastAPI. Comprendí que debo importar Query explícitamente para aplicar restricciones como ge=1, le=100.
+¿Qué decisión de diseño tomaste que no estaba escrita en el contrato?
+>Usé una lista global (db_libros = []) para simular una base de datos en memoria. Además, decidí usar status.HTTP_201_CREATED explícitamente en el decorador @app.post en lugar de solo retornar un diccionario, para garantizar que el código HTTP sea el correcto semánticamente.
+¿Qué error detectó la verificación que tú no habías previsto?
+>La verificación detectó que si no ponía el return dentro de la función listar_libros, el servidor fallaba al intentar devolver la lista. Aunque el contrato no lo pedía explícitamente, el hecho de no indentar correctamente el return hacía que la API fallara. Lo corregí asegurándome de que toda la lógica de respuesta estuviera dentro de la función.
+
+
+
+
+**Firma digital:** https://github.com/ArmandoChimDominguez
