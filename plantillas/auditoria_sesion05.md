@@ -11,7 +11,7 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* DTO manual con validación de tipos primitivos  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> La principal dificultad fue entender cómo manejar la coerción automática de Python. Cuando declaraba un modelo básico esperando un entero (cantidad: int), Python automáticamente convertía un string numérico como "5" a un entero 5, permitiendo que datos mal tipados pasaran la validación. Para resolver esto de forma manual, tuve que obligar al DTO a recibir todo como str y luego usar métodos como .isdigit() y bloques try/except dentro de la función para validar y convertir los datos, lanzando los errores 400/422 manualmente si algo fallaba.
+> La principal dificultad fue entender cómo Pydantic maneja la coerción automática. Al declarar `anio: int`, Pydantic convierte automáticamente `"1966"` a `1966`, lo cual es útil, pero también significa que no podemos relajarnos con los tipos. Para que el contrato fuera estricto, tuve que usar `ConfigDict(extra="forbid")` para bloquear campos extra y `Field` para definir las restricciones. Sin embargo, hacerlo "a mano" me obligó a entender cómo Pydantic intercepta los datos antes de llegar a mi lógica.
 
 
 ---
@@ -28,7 +28,7 @@
 
 ### 2.2 Prompt Estructurado
 ```text
-"Actúa como un Arquitecto backend experto en Pydantic v2. Necesito implementar un endpoint POST /api/producto/optimizado en FastAPI. El DTO debe recibir un nombre (mínimo 3 caracteres) y una cantidad. Requisitos estrictos: 1. La cantidad debe ser un entero estricto (usar StrictInt) para evitar que strings como '5' sean aceptados por coerción, y debe ser mayor a 0 (gt=0). 2. Usa un @field_validator para limpiar el nombre (quitar espacios y capitalizarlo). Entrégame solo el código modular con los códigos HTTP semánticos."
+"Actúa como un Arquitecto backend experto en Pydantic v2. Necesito implementar un endpoint POST /api/producto/optimizado en FastAPI. El DTO debe recibir un nombre (mínimo 3 caracteres) y una cantidad. Requisitos esDiseña un DTO de entrada para un libro que exija `titulo` (str), `anio` (int, con coerción de strings numéricos), `precio` (float) y `disponible` (bool). Bloquea cualquier campo extra con `extra="forbid"`. Define un DTO de salida que devuelva el `id` y los datos. Asegúrate de que el 422 se dispare ante datos inválidos."
 ```
 
 ---
@@ -36,40 +36,51 @@
 ## 3. Código Devuelto por el Modelo
 ```python
 # Código devuelto por el LLM
-from fastapi import FastAPI
-from pydantic import BaseModel, Field, field_validator, StrictInt
+%%writefile app_ia.py
+from fastapi import FastAPI, status
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List
 
 app = FastAPI(title="API Científico - Sesión 05")
 
-# DTO para la prueba del profesor
-class PayloadRequest(BaseModel):
-    dato: str
+# DTO de Entrada optimizado
+class LibroRequest(BaseModel):
+    titulo: str = Field(..., description="Título del libro")
+    anio: int = Field(..., description="Año de publicación (se acepta coerción de string)")
+    precio: float = Field(..., description="Precio del libro")
+    disponible: bool = Field(..., description="Disponibilidad del libro")
+    
+    # Bloquea campos extra (como 'color')
+    model_config = ConfigDict(extra="forbid")
 
-# DTO Optimizado con Pydantic v2
-class ProductoOptimizado(BaseModel):
-    nombre: str = Field(..., min_length=3)
-    cantidad: StrictInt = Field(..., gt=0)
-    precio: float = Field(..., gt=0)
+# DTO de Salida
+class LibroResponse(BaseModel):
+    id: int
+    titulo: str
+    anio: int
+    precio: float
+    disponible: bool
 
-    @field_validator('nombre')
-    @classmethod
-    def nombre_sin_espacios(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError('El nombre no puede estar vacío')
-        return v.strip().title()
+db_libros = []
+contador_id = 1
 
-@app.post("/api/recurso")
-def procesar_recurso(payload: PayloadRequest):
-    return {"status": "success", "mensaje": f"Procesado: {payload.dato}"}
-
-@app.post("/api/producto/optimizado")
-def crear_producto_optimizado(prod: ProductoOptimizado):
-    return {
-        "status": "success", 
-        "mensaje": "Validado por Pydantic v2",
-        "producto": prod.nombre,
-        "cantidad": prod.cantidad
+@app.post("/api/libros", response_model=LibroResponse, status_code=status.HTTP_201_CREATED)
+def crear_libro(libro: LibroRequest):
+    global contador_id
+    nuevo_libro = {
+        "id": contador_id,
+        "titulo": libro.titulo,
+        "anio": libro.anio,
+        "precio": libro.precio,
+        "disponible": libro.disponible
     }
+    db_libros.append(nuevo_libro)
+    contador_id += 1
+    return nuevo_libro
+
+@app.get("/api/libros")
+def listar_libros():
+    return {"libros": db_libros}
 ```
 
 ---
@@ -77,15 +88,33 @@ def crear_producto_optimizado(prod: ProductoOptimizado):
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de tipos incompatibles y coerción
 
-* [ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
-* [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
-* [ ] Encabezados `Content-Type: application/json` correctamente configurados.
+☑ Un libro válido se crea con 201 → HTTP 201.
+☑ La cadena numérica se convierte a entero → HTTP 201.
+☑ Un año no numérico produce 422 → HTTP 422.
+☑ Un campo extra produce 422 → HTTP 422.
+☑ El listado devuelve los libros creados → HTTP 200.
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> La IA omitió inicialmente el uso del tipado estricto (StrictInt) para la cantidad. Esto es una falla de seguridad y lógica de negocio, ya que Pydantic v2 por defecto realiza "coerción de tipos"; es decir, si el usuario envía "cantidad": "100" (un string), el servidor lo acepta y lo convierte a entero. Esto puede causar problemas graves si se guarda en una base de datos o se procesa matemáticamente (ej. inyecciones de datos o errores lógicos).
+> La IA omitió inicialmente el uso de ConfigDict(extra="forbid"). Sin esta configuración, el DTO aceptaba campos extra (como color: "rojo") y los ignoraba, lo que puede llevar a una brecha de seguridad si un atacante intenta inyectar campos no deseados.
 >
-> Forma en la que lo solucione fue implementé el tipo StrictInt en la definición del modelo, lo que obliga a que el JSON de entrada contenga un número entero real, rechazando cualquier string con un HTTP 422. Además, agregué el validador @field_validator para limpiar el campo nombre, asegurando que no se guarden datos con espacios en blanco o formatos inconsistentes. Finalmente, verifiqué que el código de estado 500 nunca se ejecutara ante datos mal formados.
+> Forma en la que lo solucione. Agregué model_config = ConfigDict(extra="forbid") al DTO de entrada. Esto fuerza a que cualquier campo no definido en el modelo cause un error 422. Además, verifiqué que el response_model se usara en el endpoint para que la respuesta solo incluyera los campos del DTO de salida, evitando devolver datos que no corresponden al contrato.
 
 ---
+
+---
+
+### Responde con tus palabras
+
+*¿Qué resultado te costó más alcanzar y por qué?*
+> El resultado que más me costó fue hacer que Pydantic rechazara los campos extra. Al principio no sabía cómo decirle a Pydantic que "no aceptara nada más" que los campos definidos. Descubrí que `ConfigDict(extra="forbid")` es la forma correcta en Pydantic v2. Además, entender la coerción (que `"1966"` se convierta a `1966` pero `"mil novecientos"` falle) me tomó tiempo, porque confiaba en que Pydantic lo manejaría automáticamente, pero tuve que asegurarme de que el tipo `int` estuviera bien definido.
+
+*¿Qué decisión de diseño tomaste que no estaba escrita en el contrato?*
+> Decidí usar `response_model=LibroResponse` en el endpoint POST para que FastAPI automáticamente filtre la respuesta y solo devuelva los campos definidos en el DTO de salida. Aunque el contrato solo decía "devuelve los datos del libro", usar un DTO de salida garantiza que si en el futuro el modelo cambia, la respuesta no se rompa y no exponga campos sensibles.
+
+*¿Qué error detectó la verificación que tú no habías previsto?*
+> La verificación detectó que sin `extra="forbid"`, el JSON con el campo `color` era aceptado sin problemas (devolvía 201 en lugar de 422). Lo corregí agregando la configuración `ConfigDict(extra="forbid")` en la clase `LibroRequest`, lo que obliga a que el contrato sea estricto y rechace cualquier campo desconocido.
+>
+---
+
 **Firma digital:** https://github.com/ArmandoChimDominguez
