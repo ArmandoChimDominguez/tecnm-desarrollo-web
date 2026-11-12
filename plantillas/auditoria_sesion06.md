@@ -34,8 +34,9 @@
 ---
 "Actúa como un Arquitecto backend experto en Pydantic v2. Necesito implementar una API de libros con validaciones estrictas. Para el endpoint `POST /api/libros`, el DTO debe exigir: `titulo` (entre 3 y 80 caracteres), `anio` (entre 1450 y 2100) y `precio` (mayor a 0) usando el objeto `Field`. Para el endpoint `GET /api/libros`, el parámetro de consulta `limite` debe validar que sea mayor o igual a 1 y menor o igual a 100 usando el objeto `Query`. No agregues validaciones con `if`, usa solo las herramientas de Pydantic y FastAPI."
 
-## 3. Código Devuelto por el Modelo
-%%writefile app_ia.py
+### 3. Código Devuelto por el Modelo
+
+```python
 from fastapi import FastAPI, Query, status
 from pydantic import BaseModel, Field
 
