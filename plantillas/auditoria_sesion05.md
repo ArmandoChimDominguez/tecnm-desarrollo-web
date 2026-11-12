@@ -88,11 +88,11 @@ def listar_libros():
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de tipos incompatibles y coerción
 
-☑ Un libro válido se crea con 201 → HTTP 201.
-☑ La cadena numérica se convierte a entero → HTTP 201.
-☑ Un año no numérico produce 422 → HTTP 422.
-☑ Un campo extra produce 422 → HTTP 422.
-☑ El listado devuelve los libros creados → HTTP 200.
+*☑ Un libro válido se crea con 201 → HTTP 201.
+*☑ La cadena numérica se convierte a entero → HTTP 201.
+*☑ Un año no numérico produce 422 → HTTP 422.
+*☑ Un campo extra produce 422 → HTTP 422.
+*☑ El listado devuelve los libros creados → HTTP 200.
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
