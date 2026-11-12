@@ -11,8 +11,7 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* Filtro manual de rangos y longitudes de texto  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:
-La mayor dificultad fue tener que llenar la función con múltiples bloques if para comprobar cada regla de negocio (longitud del título, rango del año, que el precio sea positivo y que el límite sea mayor a 1). Además, al hacerlo a mano, debía asegurarme de lanzar la excepción HTTPException con el código 422 correctamente. Un pequeño error de indentación (sangría) en la función de listado provocaba que la API fallara, demostrando lo frágil que es hacer las validaciones manuales en lugar de delegarlas al DTO.
+>La dificultad fue tener que llenar la función con múltiples bloques `if` para comprobar cada regla de negocio (longitud del título, rango del año, que el precio sea positivo y que el límite sea mayor a 1). Además, al hacerlo a mano, debía asegurarme de lanzar la excepción `HTTPException` con el código 422 correctamente. Un pequeño error de indentación en la función de listado provocaba que la API fallara, demostrando lo frágil que es hacer las validaciones manuales en lugar de delegarlas al DTO.
 
 ---
 
@@ -28,20 +27,21 @@ La mayor dificultad fue tener que llenar la función con múltiples bloques if p
 
 ### 2.2 Prompt Estructurado
 ```text
-[Pega aquí el prompt formal que redactaste para la IA]
-"Actúa como un Arquitecto backend experto en Pydantic v2. Necesito implementar una API de libros con validaciones estrictas. Para el endpoint POST /api/libros, el DTO debe exigir: titulo (entre 3 y 80 caracteres), anio (entre 1450 y 2100) y precio (mayor a 0) usando el objeto Field. Para el endpoint GET /api/libros, el parámetro de consulta limite debe validar que sea mayor o igual a 1 y menor o igual a 100 usando el objeto Query. No agregues validaciones con if, usa solo las herramientas de Pydantic y FastAPI."
+
+
 ```
 
 ---
+"Actúa como un Arquitecto backend experto en Pydantic v2. Necesito implementar una API de libros con validaciones estrictas. Para el endpoint `POST /api/libros`, el DTO debe exigir: `titulo` (entre 3 y 80 caracteres), `anio` (entre 1450 y 2100) y `precio` (mayor a 0) usando el objeto `Field`. Para el endpoint `GET /api/libros`, el parámetro de consulta `limite` debe validar que sea mayor o igual a 1 y menor o igual a 100 usando el objeto `Query`. No agregues validaciones con `if`, usa solo las herramientas de Pydantic y FastAPI."
 
 ## 3. Código Devuelto por el Modelo
-```python
-# Código devuelto por el LLM
+%%writefile app_ia.py
 from fastapi import FastAPI, Query, status
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="API de Libros - Optimizada")
+app = FastAPI(title="API Científico - Sesión 06")
 
+# 1. DTO con reglas de negocio inyectadas en Field
 class LibroRequest(BaseModel):
     titulo: str = Field(..., min_length=3, max_length=80, description="Título del libro")
     anio: int = Field(..., ge=1450, le=2100, description="Año de publicación")
@@ -51,6 +51,7 @@ db_libros = []
 
 @app.post("/api/libros", status_code=status.HTTP_201_CREATED)
 def crear_libro(libro: LibroRequest):
+    # Ya no hay ifs, Pydantic ya validó todo
     nuevo_libro = {
         "id": len(db_libros) + 1,
         "titulo": libro.titulo,
@@ -62,6 +63,7 @@ def crear_libro(libro: LibroRequest):
 
 @app.get("/api/libros")
 def listar_libros(limite: int = Query(..., ge=1, le=100, description="Cantidad de libros a mostrar")):
+    # Query ya validó el límite
     return db_libros[:limite]
 ```
 
@@ -70,13 +72,18 @@ def listar_libros(limite: int = Query(..., ge=1, le=100, description="Cantidad d
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de desbordamiento de cadenas y números negativos
 
-* [ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
-* [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
-* [ ] Encabezados `Content-Type: application/json` correctamente configurados.
+* ☑ Un libro dentro de los límites se crea → HTTP 201.
+* ☑ Un título demasiado corto produce 422 → HTTP 422.
+* ☑ Un año fuera de rango produce 422 → HTTP 422.
+* ☑ Un precio no positivo produce 422 → HTTP 422.
+* ☑ El límite de paginación debe ser al menos 1 → HTTP 422.
+* ☑ Un límite válido responde 200 → HTTP 200.
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> La IA omitió (en su primera iteración) incluir el parámetro Query con los límites estrictos para la paginación, limitándose a recibir un entero normal sin restricciones, lo cual permitía que un atacante solicitara la base de datos completa (límite=0 o valores negativos). Esto es una falla de seguridad (Denial of Service o Data Leak).
+> La IA omitió inicialmente incluir el parámetro Query con los límites estrictos para la paginación, limitándose a recibir un entero normal sin restricciones, lo cual permitía que un atacante solicitara la base de datos completa (límite=0 o valores negativos). Esto es una falla de seguridad (Denial of Service o Data Leak).
+
+Implementé el objeto Query de FastAPI inyectando las reglas ge=1 y le=100 directamente en la firma de la función. Ahora, si el cliente intenta enviar ?limite=0 o ?limite=9999, FastAPI intercepta la petición antes de entrar a la lógica y responde automáticamente con un HTTP 422 Unprocessable Entity, protegiendo los recursos del servidor. También se auditó que el DTO de creación de libros rechazara títulos cortos, años fuera de rango y precios negativos sin escribir un solo if.
 
 ---
 ### Responde con tus palabras
