@@ -11,7 +11,7 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* Anotación manual de metadata de endpoints  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> La principal dificultad fue comprender cómo los parámetros del decorador (tags, summary, description) afectan directamente la estructura del JSON de OpenAPI que genera FastAPI. Al hacerlo manualmente, es fácil cometer errores de tipeo en las descripciones o etiquetas que, aunque no rompen el servidor, hacen que la interfaz de Swagger UI se vea desordenada o pierda claridad para el usuario final. Comprendí que la documentación debe tratarse con el mismo rigor que la lógica de negocio.
+> La principal dificultad fue comprender cómo los parámetros del decorador (tags, summary, description) afectan directamente la estructura del JSON de OpenAPI que genera FastAPI. Al hacerlo manualmente, es fácil cometer errores de tipeo en las descripciones o etiquetas que, aunque no rompen el servidor, hacen que la interfaz de Swagger UI se vea desordenada o pierda claridad para el usuario final. Comprendí que la documentación debe tratarse con el mismo rigor que la lógica de negocio, y que para que un modelo aparezca en `components.schemas`, es obligatorio usarlo en algún endpoint.
 
 ---
 
@@ -31,45 +31,42 @@
 ```
 
 ---
-"Actúa como un Arquitecto backend experto en documentación de APIs. Necesito configurar una aplicación FastAPI con documentación OpenAPI v3.1 profesional. Agrega metadata global (título, versión 2.1.0, contacto). Utiliza json_schema_extra en el modelo PayloadRequest para inyectar un ejemplo de JSON en Swagger UI. Además, documenta un endpoint GET usando tags, summary, description y response_description para que la interfaz sea totalmente interactiva."
+"Actúa como un Arquitecto backend experto en documentación de APIs. Necesito configurar una aplicación FastAPI llamada 'Biblioteca API', versión '1.0.0', con una descripción clara. Define un modelo Pydantic `Libro` con `titulo`, `anio` y `autor`, usando `Field` para inyectar ejemplos y descripciones en Swagger. Crea un endpoint `GET /api/libros` que devuelva `{"libros": []}` y un `POST /api/libros` que use el modelo `Libro` para que se registre en la documentación OpenAPI."
 
-## 3. Código Devuelto por el Modelo
+
+### 3. Código Devuelto por el Modelo
+
 ```python
-# Código devuelto por el LLM
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel, Field
+from typing import List
 
+# 1. Metadatos de la API
 app = FastAPI(
-    title="API Científico - Sesión 07",
-    description="API optimizada con documentación OpenAPI v3.1 interactiva.",
-    version="2.1.0",
-    contact={"name": "Soporte DAB-2201", "email": "soporte@tecnm.mx"}
+    title="Biblioteca API",
+    version="1.0.0",
+    description="API de libros del curso DAB-2201 con documentación optimizada"
 )
 
-class PayloadRequest(BaseModel):
-    dato: str = Field(..., description="Texto a procesar", examples=["Texto de prueba"])
+# 2. Modelo con descripciones y ejemplos para Swagger
+class Libro(BaseModel):
+    titulo: str = Field(..., description="Título del libro", examples=["Rayuela"])
+    anio: int = Field(..., description="Año de publicación", examples=[1963])
+    autor: str = Field(..., description="Autor del libro", examples=["Julio Cortázar"])
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [{"dato": "Ejemplo de JSON para Swagger"}]
-        }
-    }
+# 3. Modelo de respuesta para envolver la lista (requerido por el contrato)
+class LibroListResponse(BaseModel):
+    libros: List[Libro]
 
-@app.post("/api/recurso", tags=["Compatibilidad"])
-def procesar_recurso(payload: PayloadRequest):
-    return {"status": "success", "mensaje": f"Procesado: {payload.dato}"}
+# 4. Endpoints
+@app.get("/api/libros", response_model=LibroListResponse)
+def listar_libros():
+    # El contrato exige devolver exactamente esta estructura
+    return {"libros": []}
 
-@app.get(
-    "/api/libros/{libro_id}", 
-    tags=["Libros"],
-    summary="Obtiene un libro por su ID",
-    description="Retorna los detalles de un libro. Si el ID no existe, lanza un 404.",
-    response_description="Los datos del libro solicitado."
-)
-def obtener_libro(libro_id: int):
-    if libro_id == 1:
-        return {"id": 1, "titulo": "Cien Años de Soledad"}
-    return {"id": libro_id, "titulo": "Libro de prueba"}
+@app.post("/api/libros", response_model=Libro, status_code=status.HTTP_201_CREATED)
+def crear_libro(libro: Libro):
+    return libro
 ```
 
 ---
@@ -77,17 +74,34 @@ def obtener_libro(libro_id: int):
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Verificación de renderizado de interfaz Swagger UI
 
-* ☑ Respuestas semánticas correctas (200 OK, 201 Created, 400 Bad Request, 422 Unprocessable).
-* ☑ No existen respuestas HTTP 500 Internal Server Error no capturadas.
-* ☑ Encabezados Content-Type: application/json correctamente configurados.
-* ☑ El JSON de OpenAPI (/openapi.json) se genera correctamente y contiene los esquemas y metadatos.
+* ☑ OpenAPI responde con metadatos → HTTP 200.
+* ☑ Swagger UI está disponible → HTTP 200.
+* ☑ ReDoc está disponible → HTTP 200.
+* ☑ El endpoint documentado responde → HTTP 200.
 
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> La IA omitió inicialmente el uso de json_schema_extra para definir ejemplos explícitos de los datos de entrada en el DTO. Al no definir ejemplos, la interfaz de Swagger UI mostraba un JSON vacío o con campos genéricos ("string"), lo que induce a errores al desarrollador al momento de usar la opción "Try it out" y puede generar peticiones mal formadas que resulten en errores 422 innecesarios.
+> La IA omitió inicialmente usar response_model en el endpoint GET /api/libros. Al no declararlo, el modelo Libro no se registraba en components.schemas de OpenAPI, lo que hacía que el verificador fallara al no encontrar el esquema. Además, la respuesta no tenía la estructura {"libros": []} que exigía el contrato.
 >
-> Mi solucion fue la siguinte:Implementé el bloque model_config con json_schema_extra dentro del modelo PayloadRequest. Ahora, Swagger UI renderiza un ejemplo exacto y listo para ejecutar ({"dato": "Ejemplo de JSON para Swagger"}). Además, me aseguré de agregar la metadata de contacto y versión a nivel de aplicación, garantizando que el contrato OpenAPI cumpla con los estándares profesionales y sea fácil de auditar.
+> Implementé un modelo de respuesta LibroListResponse que envuelve la lista de libros. De esta forma, el JSON de salida es exactamente {"libros": []} y el modelo Libro se registra automáticamente en OpenAPI. También me aseguré de que la metadata (title, version, description) coincidiera con el contrato y de que /docs y /redoc estuvieran disponibles por defecto.
+
+---
+
+---
+
+Responde con tus palabras
+¿Qué resultado te costó más alcanzar y por qué?
+
+El resultado que más me costó fue hacer que el modelo Libro apareciera en components.schemas. Al principio no entendía por qué no se registraba en OpenAPI, hasta que comprendí que debía usar el modelo en un endpoint con response_model. Una vez que agregué el POST que usa Libro, el esquema apareció automáticamente en Swagger.
+
+¿Qué decisión de diseño tomaste que no estaba escrita en el contrato?
+
+Decidí crear un modelo de respuesta LibroListResponse para envolver la lista. Aunque el contrato solo pedía que /api/libros devolviera {"libros": []}, envolver la lista en un modelo garantiza que el JSON de salida sea exactamente el esperado y que el esquema de OpenAPI documente correctamente el nivel superior de la respuesta.
+
+¿Qué error detectó la verificación que tú no habías previsto?
+
+La verificación detectó que sin el response_model en el endpoint, FastAPI no incluía el modelo Libro en la sección de esquemas de OpenAPI. Lo corregí asegurándome de que todos los modelos utilizados en las respuestas fueran declarados explícitamente con response_model.
 
 ---
 **Firma digital:** https://github.com/ArmandoChimDominguez
