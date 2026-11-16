@@ -11,7 +11,7 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* Lanzamiento manual de excepciones estructuradas  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> La dificultad fue entender que al lanzar un `HTTPException` de FastAPI, el framework automáticamente lo formatea a JSON. Sin embargo, si hay un error en el código que no sea una excepción controlada (como un error de sintaxis o división por cero), el servidor de Python tira un error 500 y ensucia la consola. Aprendí que las excepciones manuales son útiles, pero no cubren los errores inesperados del sistema.
+> La dificultad fue entender que al lanzar una excepción simple (como `HTTPException`), FastAPI devuelve un JSON con el campo `detail`. Sin embargo, el contrato de esta sesión exigía un "sobre de error" con una estructura específica: `{"error": {"codigo": "...", "mensaje": "..."}}`. Lograr esto a mano requería interceptar los errores de validación de Pydantic (422) y los errores de negocio (404) para que devolvieran exactamente ese formato, evitando que el servidor devolviera la estructura por defecto de FastAPI o un error 500 con el *traceback* expuesto.
 
 ---
 
@@ -31,46 +31,54 @@
 ```
 
 ---
-"Actúa como experto en FastAPI. Necesito implementar un manejador global de excepciones usando `@app.exception_handler(Exception)` y `JSONResponse`. La idea es que si ocurre un error interno (como una división por cero), el servidor no se caiga ni devuelva un HTML feo, sino que retorne un JSON estructurado con el código 500, un mensaje amigable y la ruta afectada."
+"Actúa como experto en FastAPI. Necesito un manejo de errores uniforme. Define una excepción `LibroNoEncontrado` y regístrala con un handler que responda 404 con el JSON `{"error": {"codigo": "NO_ENCONTRADO", "mensaje": ...}}`. Haz lo mismo para los errores de validación (422) con `codigo="VALIDACION"`. Asegúrate de que el título vacío lance 422 usando `Field(min_length=1)` y de que la API nunca devuelva un 500."
 ## 3. Código Devuelto por el Modelo
 ```python
 # Código devuelto por el LLM
 %%writefile app_ia.py
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="API Científico - Sesión 08")
 
-class PayloadRequest(BaseModel):
-    dato: str
+db_libros = {1: {"id": 1, "titulo": "Rayuela", "anio": 1963}}
 
-# --- RUTA DE COMPATIBILIDAD PARA LA PRUEBA DEL PROFESOR ---
-@app.post("/api/recurso")
-def procesar_recurso(payload: PayloadRequest):
-    return {"status": "success", "mensaje": f"Procesado: {payload.dato}"}
+class LibroRequest(BaseModel):
+    # El min_length=1 hace que Pydantic lance 422 automáticamente si el título está vacío
+    titulo: str = Field(..., min_length=1)
+    anio: int
 
-# --- RETO DEL CIENTÍFICO: Manejador Global de Excepciones ---
-# Esto captura CUALQUIER error no controlado (que normalmente daría un 500 feo)
-@app.exception_handler(Exception)
-async def manejador_global_errores(request: Request, exc: Exception):
-    # Retornamos un JSON estructurado en lugar de dejar que el servidor colapse
+class LibroNoEncontrado(Exception):
+    def __init__(self, libro_id: int):
+        self.libro_id = libro_id
+
+@app.exception_handler(LibroNoEncontrado)
+async def handler_libro_no_encontrado(request: Request, exc: LibroNoEncontrado):
     return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "status": "error",
-            "mensaje": "Ha ocurrido un error interno en el servidor.",
-            "detalle_tecnico": str(exc), # Útil para debug
-            "ruta_afectada": request.url.path
-        }
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"error": {"codigo": "NO_ENCONTRADO", "mensaje": f"El libro {exc.libro_id} no existe"}}
     )
 
-# Ruta para probar el manejador global (provocamos un error a propósito)
-@app.get("/api/error-critico")
-def provocar_error():
-    # Esto lanzará un ZeroDivisionError, que será capturado por el manejador global
-    resultado = 10 / 0 
-    return {"resultado": resultado}
+@app.exception_handler(RequestValidationError)
+async def handler_validacion(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"error": {"codigo": "VALIDACION", "mensaje": "Revisa los datos enviados"}}
+    )
+
+@app.get("/api/libros/{libro_id}")
+def obtener_libro(libro_id: int):
+    if libro_id not in db_libros:
+        raise LibroNoEncontrado(libro_id)
+    return db_libros[libro_id]
+
+@app.post("/api/libros", status_code=status.HTTP_201_CREATED)
+def crear_libro(libro: LibroRequest):
+    nuevo = {"id": len(db_libros) + 1, **libro.model_dump()}
+    db_libros[nuevo["id"]] = nuevo
+    return nuevo
 ```
 
 ---
@@ -78,15 +86,31 @@ def provocar_error():
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de captura de errores sin crashing (HTTP 500)
 
-* ☑ Respuestas semánticas correctas (200 OK, 500 Internal Server Error controlado).
-* ☑ No existen caídas del servidor (Crashing) por errores en tiempo de ejecución.
-* ☑ Encabezados Content-Type: application/json correctamente configurados en errores.
+* ☑ Un libro existente responde 200 → HTTP 200.
+* ☑ Un libro inexistente responde 404 con sobre de error → HTTP 404.
+* ☑ Los datos inválidos responden 422 con sobre de error → HTTP 422.
+* ☑ Un libro válido sigue respondiendo 201 → HTTP 201.
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> La IA omitió la captura de excepciones genéricas (Exception). El framework por defecto maneja los errores de validación (422) y los errores controlados (HTTPException), pero si el servidor sufre un error interno, devuelve un Internal Server Error sin estructura JSON (en muchos casos) y deja al cliente sin saber qué pasó.
+> La IA omitió inicialmente la validación del título vacío en el POST. Si un usuario enviaba {"titulo": ""}, el código lo aceptaba como válido y lo guardaba, en lugar de rechazarlo con un 422. Además, no existía un manejador global para RequestValidationError, por lo que FastAPI devolvía su JSON por defecto (con el campo detail), violando el contrato del "sobre de error".
 > 
-> Implementé un decorador global @app.exception_handler(Exception) que intercepta cualquier error inesperado y lo devuelve como un JSONResponse con código 500 estructurado. Esto garantiza que la API siempre se comunique con el cliente de forma predecible (en formato JSON) y evita que el servidor caiga (crashing) ante fallas inesperadas.
+> Agregué min_length=1 al campo titulo del modelo Pydantic, lo que hace que FastAPI lance automáticamente un 422 cuando el título está vacío. Además, implementé un manejador global para RequestValidationError que intercepta cualquier error de validación y lo devuelve con la estructura {"error": {"codigo": "VALIDACION", "mensaje": "..."}}, cumpliendo al 100% con el contrato.
+
+---
+
+---
+
+### Responde con tus palabras
+
+*¿Qué resultado te costó más alcanzar y por qué?*
+> El resultado que más me costó fue hacer que el error 422 devolviera el sobre de error correcto. FastAPI, por defecto, devuelve los errores de validación con el formato `{"detail": [...]}`, pero el contrato exigía `{"error": {"codigo": "VALIDACION"}}`. Tuve que registrar un manejador global para `RequestValidationError` para interceptar ese error y reformatearlo.
+
+*¿Qué decisión de diseño tomaste que no estaba escrita en el contrato?*
+> Decidí registrar dos manejadores globales: uno para la excepción de negocio `LibroNoEncontrado` y otro para `RequestValidationError`. Aunque el contrato solo decía "lanza un 404", manejar los errores de forma centralizada garantiza que todos los errores (incluyendo los inesperados) tengan el mismo formato, facilitando el consumo de la API por parte del cliente.
+
+*¿Qué error detectó la verificación que tú no habías previsto?*
+> La verificación detectó que si el título estaba vacío, el código lo aceptaba como válido y devolvía un 201. Lo corregí agregando `min_length=1` al campo `titulo` en el modelo Pydantic, lo que obliga a que el título tenga al menos un carácter y lance un 422 automáticamente si está vacío.
 
 ---
 **Firma digital:** https://github.com/ArmandoChimDominguez
