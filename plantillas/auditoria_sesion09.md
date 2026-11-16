@@ -11,7 +11,7 @@
 ## 1. Fase 1: El Artesano (Dificultad Manual)
 *Reto:* Middleware manual de tiempo de respuesta (X-Process-Time)  
 *Describe qué dificultad encontraste al procesar la petición HTTP o validar campos a mano:*
-> La principal dificultad fue entender el ciclo de vida de una petición en FastAPI usando `@app.middleware("http")`. Descubrí que la función `call_next(request)` es crucial, porque es el puente que permite que la petición continúe hacia el endpoint. Si no la llamábamos con `await`, la petición se quedaba "colgada" y el servidor nunca respondía. Además, tuve que asegurarme de calcular la diferencia de tiempo usando `time.time()` para inyectar el header `X-Process-Time` antes de que la respuesta saliera al cliente.
+> La principal dificultad fue entender el ciclo de vida de una petición en FastAPI usando `@app.middleware("http")`. Descubrí que la función `call_next(request)` es crucial, porque es el puente que permite que la petición continúe hacia el endpoint. Si no la llamábamos con `await`, la petición se quedaba "colgada" y el servidor nunca respondía. Además, tuve que asegurarme de calcular la diferencia de tiempo e inyectar el header `X-Process-Time` antes de que la respuesta saliera al cliente, e incluir lógica para generar un `X-Request-ID` con `uuid` si el cliente no lo enviaba.
 
 ---
 
@@ -31,47 +31,39 @@
 ```
 
 ---
-> "Actúa como experto en seguridad web y FastAPI. Necesito implementar un Middleware HTTP (`@app.middleware("http")`) que intercepte las peticiones. Debe calcular el tiempo de procesamiento y extraer la IP del cliente (`request.client.host`) y el User-Agent de los headers. Inyecta estos datos en la respuesta final como headers personalizados (`X-Process-Time`, `X-Client-IP`, `X-User-Agent`, `X-Transaction-ID`) y genera un log de auditoría por consola."
+> ""Actúa como experto en FastAPI. Necesito un middleware (`@app.middleware("http")`) que mida el tiempo de procesamiento usando `time.perf_counter()` y agregue las cabeceras `X-Process-Time` y `X-Request-ID`. Si el cliente envía un `X-Request-ID`, debes conservarlo; si no, genera uno con `uuid`. Asegúrate de que el middleware aplique a todas las respuestas, incluyendo los 404."
 > 
 ## 3. Código Devuelto por el Modelo
 ```python
 # Código devuelto por el LLM
 %%writefile app_ia.py
 import time
+import uuid
 from fastapi import FastAPI, Request
-from pydantic import BaseModel
+from typing import Optional
 
 app = FastAPI(title="API Científico - Sesión 09")
 
-class PayloadRequest(BaseModel):
-    dato: str
+@app.get("/api/libros")
+def listar_libros():
+    return {"libros": []}
 
-# --- RUTA DE COMPATIBILIDAD PARA LA PRUEBA DEL PROFESOR ---
-@app.post("/api/recurso")
-def procesar_recurso(payload: PayloadRequest):
-    return {"status": "success", "mensaje": f"Procesado: {payload.dato}"}
-
-# --- RETO DEL CIENTÍFICO: Interceptor de auditoría y rastreo ---
 @app.middleware("http")
-async def audit_and_trace_middleware(request: Request, call_next):
-    start_time = time.time()
+async def logging_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
     
-    # Extraemos datos del cliente para auditoría
-    client_ip = request.client.host if request.client else "Desconocida"
-    user_agent = request.headers.get("User-Agent", "Desconocido")
+    # Validamos si el cliente ya envió un ID de traza
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
     
-    # Dejamos pasar la petición
+    # Ejecutamos el endpoint (y capturamos la respuesta incluso si es un error 404)
     response = await call_next(request)
     
-    # Inyectamos múltiples headers de rastreo en la respuesta
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    response.headers["X-Client-IP"] = client_ip
-    response.headers["X-User-Agent"] = user_agent
-    response.headers["X-Transaction-ID"] = "tx-123456789" # Simulando un ID de transacción
+    # Calculamos el tiempo de procesamiento
+    process_time = time.perf_counter() - start_time
     
-    # Imprimimos en consola el log de la transacción
-    print(f"[LOG] Ruta: {request.url.path} | IP: {client_ip} | Tiempo: {process_time:.4f}s")
+    # Inyectamos las cabeceras
+    response.headers["X-Process-Time"] = f"{process_time:.6f}"
+    response.headers["X-Request-ID"] = request_id
     
     return response
 ```
@@ -81,15 +73,27 @@ async def audit_and_trace_middleware(request: Request, call_next):
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de inyección de encabezados de rastreo
 
-* ☑ Respuestas semánticas correctas (200 OK, 201 Created, 400 Bad Request, 422 Unprocessable).
-* ☑ No existen respuestas HTTP 500 Internal Server Error no capturadas.
-* ☑ Encabezados Content-Type: application/json correctamente configurados.
+* ☑ Una respuesta correcta trae tiempo y traza → HTTP 200.
+* ☑ El X-Request-ID del cliente se conserva → HTTP 200.
+* ☑ El middleware también cubre los 404 → HTTP 404.
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
-> La IA omitió la validación del objeto request.client en su primera iteración. Si el servidor es accedido internamente (por ejemplo, desde un proxy o un test unitario), request.client puede ser None. Al intentar acceder a request.client.host, el servidor lanzaría un error AttributeError, provocando un colapso total (Error 500).
+> La IA omitió inicialmente cubrir el caso de los 404. Si el endpoint no existe, FastAPI lanza una excepción interna, y si no se maneja correctamente en el middleware, se pierde la oportunidad de inyectar los headers de trazabilidad. Además, no se validaba el X-Request-ID enviado por el cliente, lo que podría permitir ataques de inyección de cabeceras (Header Injection) si un atacante envía un ID con saltos de línea.
 >
->  Añadí una validación ternaria segura (request.client.host if request.client else "Desconocida") para asegurar que el middleware nunca colapse el servidor por un problema de contexto. Además, garantizo que los logs de auditoría se impriman con la IP real del cliente y el User-Agent, cumpliendo con los requisitos de trazabilidad de seguridad web.
+>  El middleware captura la respuesta a través de call_next(request) y aplica los headers independientemente del código de estado (200, 404, 500). Para el X-Request-ID, limité su validación asegurando que solo se acepten caracteres alfanuméricos y guiones, y en caso de no ser válido, se genera uno nuevo con uuid4(). Esto garantiza la trazabilidad sin exponer el servidor a ataques de inyección.
+---
 
+### Responde con tus palabras
+
+*¿Qué resultado te costó más alcanzar y por qué?*
+> El resultado que más me costó fue hacer que el middleware se aplicara también a los 404. Al principio pensaba que el middleware solo se ejecutaba si la ruta existía, pero descubrí que `await call_next(request)` devuelve una `Response` incluso si es un error 404. Lo difícil fue entender que debía inyectar los headers **después** de `call_next` para que se aplicaran a cualquier respuesta.
+
+*¿Qué decisión de diseño tomaste que no estaba escrita en el contrato?*
+> Decidí usar `time.perf_counter()` en lugar de `time.time()` para medir el tiempo de procesamiento, ya que `perf_counter` es más precisa para medir intervalos cortos y no se ve afectada por los cambios de hora del sistema. Además, limité el formato del `X-Process-Time` a 6 decimales para que sea consistente y fácil de leer.
+
+*¿Qué error detectó la verificación que tú no habías previsto?*
+> La verificación detectó que si el cliente enviaba un `X-Request-ID` con espacios o caracteres especiales, el header se inyectaba tal cual en la respuesta, lo cual podía romper la sintaxis de HTTP. Lo corregí validando el valor y, si no cumplía con el formato esperado, generaba un nuevo ID con `uuid4()`.
+>
 ---
 **Firma digital:** https://github.com/ArmandoChimDominguez
