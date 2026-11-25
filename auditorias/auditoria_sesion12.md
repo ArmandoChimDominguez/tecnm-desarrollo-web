@@ -98,6 +98,37 @@ def listar_libros(repo: IRepositorio = Depends(get_repositorio)):
 * ☑ El endpoint usa Depends.
 * ☑ Existe la función de inyección get_repositorio.
 
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app_ia.py
+==============================================================================
+
+✅ 01. El diagnóstico revela el repositorio inyectado
+✅ 02. El endpoint inyectado crea un libro
+✅ 03. El repositorio conserva el estado
+✅ 04. La validación sigue en el borde
+
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+
+
+from verificar import revisar_archivo, resumen
+
+resultados = []
+resultados.append(revisar_archivo("app.py", exigir=["Depends"], descripcion="El endpoint usa Depends"))
+resultados.append(revisar_archivo("app.py", exigir=["get_repositorio"], descripcion="Existe la función de inyección"))
+resumen(resultados)
+
+
+✅ El endpoint usa Depends
+✅ Existe la función de inyección
+
+------------------------------------------------------------------------------
+RESULTADO: 2/2 comprobaciones correctas. ¡Resultado logrado!
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió inicialmente la validación del título vacío en el modelo LibroRequest. Si un usuario enviaba un título vacío, el servidor lo aceptaba y lo guardaba, violando el contrato de validación en el borde. Además, el repositorio era una instancia local, lo que rompía la persistencia entre peticiones.
