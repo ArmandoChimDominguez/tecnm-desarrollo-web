@@ -88,9 +88,9 @@ def login(datos: LoginRequest):
 VERIFICACIÓN DEL RESULTADO · 3 casos · app_ia.py
 ==============================================================================
 
-✅ 01. El registro responde sin filtrar la contraseña
-✅ 02. El login correcto autentica
-✅ 03. La contraseña incorrecta se rechaza
+* ✅ 01. El registro responde sin filtrar la contraseña
+* ✅ 02. El login correcto autentica
+* ✅ 03. La contraseña incorrecta se rechaza
 
 ------------------------------------------------------------------------------
 RESULTADO: 3/3 casos correctos. ¡Resultado logrado!
@@ -98,7 +98,7 @@ RESULTADO: 3/3 casos correctos. ¡Resultado logrado!
 ---
 ---
 
-✅ Se usa un algoritmo de hashing para contraseñas
+* ✅ Se usa un algoritmo de hashing para contraseñas
 
 ------------------------------------------------------------------------------
 RESULTADO: 1/1 comprobaciones correctas. ¡Resultado logrado!
