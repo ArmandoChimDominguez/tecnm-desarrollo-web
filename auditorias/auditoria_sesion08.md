@@ -82,6 +82,22 @@ def provocar_error():
 * ☑ No existen caídas del servidor (Crashing) por errores en tiempo de ejecución.
 * ☑ Encabezados Content-Type: application/json correctamente configurados en errores.
 
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app.py
+==============================================================================
+
+✅ 01. Un libro existente responde 200
+✅ 02. Un libro inexistente responde 404 con sobre de error
+✅ 03. Los datos inválidos responden 422 con sobre de error
+✅ 04. Un libro válido sigue respondiendo 201
+
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió la captura de excepciones genéricas (Exception). El framework por defecto maneja los errores de validación (422) y los errores controlados (HTTPException), pero si el servidor sufre un error interno, devuelve un Internal Server Error sin estructura JSON (en muchos casos) y deja al cliente sin saber qué pasó.
