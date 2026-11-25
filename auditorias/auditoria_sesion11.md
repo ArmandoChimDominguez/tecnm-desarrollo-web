@@ -97,6 +97,35 @@ def obtener_todos() -> List[dict]:
 * [☑] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
 * [☑] Encabezados `Content-Type: application/json` correctamente configurados.
 
+
+LO MISMP PARA ESTE
+
+
+
+## 🖥️ Salida de la Verificación
+ 
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app.py
+==============================================================================
+ 
+✅ 01. El listado inicia vacío
+✅ 02. El servicio crea un libro
+✅ 03. El listado conserva el contrato
+✅ 04. La validación del router sigue funcionando
+ 
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+ 
+✅ Existe la capa de router
+✅ La app incluye el router
+✅ Existe la capa de servicio
+✅ Existe la capa de repositorio
+ 
+------------------------------------------------------------------------------
+RESULTADO: 4/4 comprobaciones correctas. ¡Resultado logrado!
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió inicialmente la validación del titulo en el router.py con min_length=1. Al no tener esa validación, el test del caso 4 (datos inválidos con anio: "mil novecientos") fallaba porque Pydantic no lo detectaba antes de llegar al servicio.
