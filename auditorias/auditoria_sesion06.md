@@ -70,9 +70,27 @@ def listar_libros(limite: int = Query(..., ge=1, le=100, description="Cantidad d
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de desbordamiento de cadenas y números negativos
 
-* [ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
-* [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
-* [ ] Encabezados `Content-Type: application/json` correctamente configurados.
+* [✅ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
+* [✅ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
+* [✅ ] Encabezados `Content-Type: application/json` correctamente configurados.
+
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 6 casos · app_ia.py
+==============================================================================
+
+✅ 01. Un libro dentro de los límites se crea
+✅ 02. Un título demasiado corto produce 422
+✅ 03. Un año fuera de rango produce 422
+✅ 04. Un precio no positivo produce 422
+✅ 05. El límite de paginación debe ser al menos 1
+✅ 06. Un límite válido responde 200
+
+------------------------------------------------------------------------------
+RESULTADO: 6/6 casos correctos. ¡Resultado logrado!
+```
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
