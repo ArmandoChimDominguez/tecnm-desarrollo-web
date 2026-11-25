@@ -95,23 +95,6 @@ def eco(datos: Mensaje):
 * [ *] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
 * [* ] Encabezados `Content-Type: application/json` correctamente configurados.
 
-## 🖥️ Salida de la Verificación
-
-```text
-==============================================================================
-VERIFICACIÓN DEL RESULTADO · 2 casos · app.py
-==============================================================================
-
--> Prueba 1: Creando recurso (POST)...
-Código: 201
-Respuesta: {'status': 'success', 'mensaje': 'Creado: Prueba 1'}
-
--> Prueba 2: Probando método no permitido...
-Código: 405
-Respuesta: {'detail': 'Method Not Allowed'}
-
-✅ RESULTADO: Auditoría superada. Idempotencia y métodos HTTP correctos.
-```
    
 
 ### Reporte Crítico
