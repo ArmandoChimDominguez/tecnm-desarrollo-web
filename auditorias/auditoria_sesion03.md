@@ -83,6 +83,22 @@ async def procesar_recurso(request: Request):
 * [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
 * [ ] Encabezados `Content-Type: application/json` correctamente configurados.
 
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+TEST HARNESS · SESIÓN 03
+==============================================================================
+
+Prueba 1 (JSON): 200
+Respuesta: {'status': 'success', 'mensaje': 'Procesado: Test Harness'}
+
+Prueba 2 (Header incorrecto): 415
+Respuesta: {'detail': 'El Content-Type debe ser application/json'}
+
+✅ RESULTADO: Auditoría completada correctamente.
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió la prioridad de validación de los encabezados HTTP. En su primera iteración, el modelo sugirió declarar el objeto PayloadRequest directamente en la firma de la función. Esto provocó que, al enviar un Content-Type: text/plain, FastAPI intentara parsear el cuerpo con Pydantic antes de revisar el header, devolviendo un HTTP 422 en lugar del HTTP 415 requerido.
