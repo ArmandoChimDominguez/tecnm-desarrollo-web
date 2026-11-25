@@ -82,6 +82,21 @@ def obtener_libro(libro_id: int):
 * ☑ Encabezados Content-Type: application/json correctamente configurados.
 * ☑ El JSON de OpenAPI (/openapi.json) se genera correctamente y contiene los esquemas y metadatos.
 
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app_ia.py
+==============================================================================
+
+✅ 01. OpenAPI responde con metadatos
+✅ 02. Swagger UI está disponible
+✅ 03. ReDoc está disponible
+✅ 04. El endpoint documentado responde
+
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+```
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
