@@ -85,6 +85,21 @@ async def audit_and_trace_middleware(request: Request, call_next):
 * ☑ No existen respuestas HTTP 500 Internal Server Error no capturadas.
 * ☑ Encabezados Content-Type: application/json correctamente configurados.
 
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 3 casos · app_ia.py
+==============================================================================
+
+✅ 01. Una respuesta correcta trae tiempo y traza
+✅ 02. El X-Request-ID del cliente se conserva
+✅ 03. El middleware también cubre los 404
+
+------------------------------------------------------------------------------
+RESULTADO: 3/3 casos correctos. ¡Resultado logrado!
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió la validación del objeto request.client en su primera iteración. Si el servidor es accedido internamente (por ejemplo, desde un proxy o un test unitario), request.client puede ser None. Al intentar acceder a request.client.host, el servidor lanzaría un error AttributeError, provocando un colapso total (Error 500).
