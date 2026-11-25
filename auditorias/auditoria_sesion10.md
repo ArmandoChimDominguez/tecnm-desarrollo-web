@@ -106,6 +106,30 @@ def eliminar_libro(libro_id: int):
 * ☑ Validación de datos inválidos → HTTP 422.
 * ☑ Método no permitido → HTTP 405.
 * ☑ Contrato OpenAPI disponible → HTTP 200.
+
+
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 9 casos · app_ia.py
+==============================================================================
+
+✅ 01. Listado inicial vacío
+✅ 02. Creación válida
+✅ 03. Consulta del libro creado
+✅ 04. Actualización del libro
+✅ 05. Eliminación del libro
+✅ 06. El libro eliminado ya no existe
+✅ 07. Validación de datos inválidos
+✅ 08. Método no permitido
+✅ 09. Contrato OpenAPI disponible
+
+------------------------------------------------------------------------------
+RESULTADO: 9/9 casos correctos. ¡Resultado logrado!
+```
+
+---
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió inicialmente usar response_model en los endpoints de creación y actualización. Sin este parámetro, el esquema Libro no aparecía en components.schemas de OpenAPI, lo que hacía que el caso 9 fallara. Además, la respuesta podía incluir campos que no estaban en el contrato si el diccionario interno crecía.
