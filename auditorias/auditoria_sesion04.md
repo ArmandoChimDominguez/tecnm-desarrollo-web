@@ -81,9 +81,25 @@ def obtener_libro(libro_id: int = Path(..., ge=1, description="ID positivo")):
 ## 4. Fase 3: El Auditor (Resultados del Test Harness HTTP)
 *Pruebas ejecutadas:* Pruebas de peticiones a recursos inexistentes (404)
 
-* [ ] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
-* [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
-* [ ] Encabezados `Content-Type: application/json` correctamente configurados.
+* [ ✅] Respuestas semánticas correctas (`200 OK`, `201 Created`, `400 Bad Request`, `422 Unprocessable`).
+* [✅ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
+* [✅ ] Encabezados `Content-Type: application/json` correctamente configurados.
+
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app.py
+==============================================================================
+
+✅ 01. Libros del autor 1
+✅ 02. Filtro por género y límite
+✅ 03. Un autor inexistente produce 404
+✅ 04. La colección completa de libros
+
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+```
 
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
