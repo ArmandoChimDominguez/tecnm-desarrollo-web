@@ -81,6 +81,19 @@ def crear_producto_optimizado(prod: ProductoOptimizado):
 * [ ] No existen respuestas HTTP `500 Internal Server Error` no capturadas.
 * [ ] Encabezados `Content-Type: application/json` correctamente configurados.
 
+
+## 🖥️ Salida de la Verificación
+
+```text
+==============================================================================
+AUDITORÍA CRÍTICA WEB · SESIÓN 05
+==============================================================================
+
+Respuesta Servidor: HTTP 200 - {'status': 'success', 'mensaje': 'Procesado: Prueba Test Harness'}
+
+✅ PASO SUPERADO - Test Harness HTTP ejecutado con éxito.
+```
+
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió inicialmente el uso del tipado estricto (StrictInt) para la cantidad. Esto es una falla de seguridad y lógica de negocio, ya que Pydantic v2 por defecto realiza "coerción de tipos"; es decir, si el usuario envía "cantidad": "100" (un string), el servidor lo acepta y lo convierte a entero. Esto puede causar problemas graves si se guarda en una base de datos o se procesa matemáticamente (ej. inyecciones de datos o errores lógicos).
