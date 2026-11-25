@@ -80,6 +80,61 @@ def leer_perfil(token: str = Depends(oauth2_scheme)):
 * ☑ No existen respuestas HTTP 500 Internal Server Error no capturadas.
 * ☑ Encabezados Content-Type: application/json correctamente configurados.
 * ☑ Se usa el flujo OAuth2 de FastAPI (OAuth2PasswordBearer y OAuth2PasswordRequestForm).
+==============================================================================
+✅ 01. El formulario de login emite token
+✅ 02. El token Bearer abre el perfil
+✅ 03. Sin token se responde 401 con WWW-Authenticate
+✅ 04. Un esquema distinto se rechaza
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+
+
+
+from verificar import revisar_archivo, resumen
+
+resultados = []
+resultados.append(revisar_archivo("app.py", regex=["OAuth2PasswordBearer", "OAuth2PasswordRequestForm"], descripcion="Se usa el flujo OAuth2 de FastAPI"))
+resumen(resultados)
+
+ 
+
+✅ Se usa el flujo OAuth2 de FastAPI
+------------------------------------------------------------------------------
+RESULTADO: 1/1 comprobaciones correctas. ¡Resultado logrado!
+
+EN ESTE CASO CONSERVA EL PEDAZO DE CODIGO
+
+
+
+
+## 🖥️ Salida de la Verificación
+ 
+```text
+==============================================================================
+VERIFICACIÓN DEL RESULTADO · 4 casos · app.py
+==============================================================================
+ 
+✅ 01. El formulario de login emite token
+✅ 02. El token Bearer abre el perfil
+✅ 03. Sin token se responde 401 con WWW-Authenticate
+✅ 04. Un esquema distinto se rechaza
+ 
+------------------------------------------------------------------------------
+RESULTADO: 4/4 casos correctos. ¡Resultado logrado!
+ 
+ 
+from verificar import revisar_archivo, resumen
+ 
+resultados = []
+resultados.append(revisar_archivo("app.py", regex=["OAuth2PasswordBearer", "OAuth2PasswordRequestForm"], descripcion="Se usa el flujo OAuth2 de FastAPI"))
+resumen(resultados)
+ 
+ 
+✅ Se usa el flujo OAuth2 de FastAPI
+ 
+------------------------------------------------------------------------------
+RESULTADO: 1/1 comprobaciones correctas. ¡Resultado logrado!
+```
 ### Reporte Crítico
 *¿Qué código de estado HTTP o falla de seguridad omitió la IA y cómo lo corregiste?*
 > La IA omitió inicialmente el encabezado WWW-Authenticate: Bearer en la respuesta 401. Aunque el código devolvía el error correcto, sin este encabezado los clientes OAuth2 no saben qué esquema de autenticación deben usar.
